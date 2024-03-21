@@ -48,9 +48,9 @@ def TI_CI_II (string):
     elif string == "I":
         return ["I",-1]
     elif string == "":
-        return ["empty",-1]
+        return ["EM",-1]
     else:
-        return ["null",hex_value(string)]
+        return ["NO",hex_value(string)]
 
 # %%
 def SS (string):
@@ -59,7 +59,7 @@ def SS (string):
     elif string == "O":
         return "O"
     elif string == "":
-        return "null"
+        return "NO"
     else:
         raise ValueError("SS test does not contain a valid value")
 
@@ -70,14 +70,14 @@ def TS (string):
     elif string == "-1":
         return ["-1",-1]
     elif string == "":
-        return ["empty",-1]
+        return ["EM",-1]
     else:
-        return ["null",hex_value(string)]
+        return ["NO",hex_value(string)]
 
 # %%
 def O (string):
     if string == "":
-        return "null"
+        return "NO"
     else:
         result = []
         for letter in string:
@@ -102,7 +102,7 @@ def Y_N (string):
     elif string == "N":
         return "N"
     elif string == "":
-        return "null"
+        return "NO"
     else:
         raise ValueError("A test with Y/N response does not contain a valid value")
 
@@ -117,13 +117,13 @@ def CC (string):
     elif string == "O":
         return "O"
     elif string == "":
-        return "null"
+        return "NO"
     else:
         raise ValueError("A test with Y/N response does not contain a valid value")
 
 # %%
 def Q (string):
-    response = ["null","null"]
+    response = ["NO","NO"]
     if "R" in string:
         response[0] = "R"
     if "U" in string:
@@ -142,7 +142,7 @@ def S (string):
     elif string == "O":
         return "O"
     elif string == "":
-        return "null"
+        return "NO"
     else:
         raise ValueError("The test S response does not contain a valid value")
 
@@ -157,13 +157,13 @@ def A (string):
     elif string == "O":
         return "O"
     elif string == "":
-        return "null"
+        return "NO"
     else:
         raise ValueError("The test A response does not contain a valid value")
 
 # %%
 def F (string):
-    response = ["null","null","null","null","null","null","null"]
+    response = ["NO","NO","NO","NO","NO","NO","NO"]
     if "E" in string:
         response[0] = "E"
     if "U" in string:
@@ -186,9 +186,9 @@ def RIPL_RID_RUCK (string):
     if string == "G":
         return ["G",-1]
     elif string == "":
-        return ["empty",-1]
+        return ["EM",-1]
     else:
-        return ["null",hex_value(string)]
+        return ["NO",hex_value(string)]
 
 # %%
 def RIPCK (string):
@@ -199,7 +199,7 @@ def RIPCK (string):
     elif string == "I":
         return "I"
     elif string == "":
-        return "null"
+        return "NO"
     else:
         raise ValueError("The test RIPCK response does not contain a valid value")
 
@@ -210,7 +210,7 @@ def RUD (string):
     elif string == "I":
         return "I"
     elif string == "":
-        return "null"
+        return "NO"
     else:
         raise ValueError("The test RUD response does not contain a valid value")
 
@@ -225,7 +225,7 @@ def DFI (string):
     elif string == "O":
         return "O"
     elif string == "":
-        return "null"
+        return "NO"
     else:
         raise ValueError("The test DFI response does not contain a valid value")
 
@@ -238,6 +238,6 @@ def CD (string):
     elif string == "O":
         return ["O",-1]
     elif string == "":
-        return ["empty",-1]
+        return ["EM",-1]
     else:
-        return ["null",hex_value(string)]
+        return ["NO",hex_value(string)]
