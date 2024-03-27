@@ -1,5 +1,5 @@
 import numpy as np
-from numpy import argmax
+from numpy import argmax as npargmax
 import pandas as pd
 import optuna
 from optuna.trial import TrialState
@@ -18,6 +18,7 @@ import logging
 
 import torch
 import torch.nn as nn
+from torch import argmax as torchargmax
 from tab_transformer_pytorch import TabTransformer, FTTransformer
 from torchmetrics import AUROC
 import sys
@@ -219,7 +220,7 @@ def objective(trial):
     # ------------------------------------------------
     
     target = train_data[LABEL].values
-    target_label_encoded = argmax(target, axis=1)
+    target_label_encoded = npargmax(target, axis=1)
     # print("One-hot encoded:  ", target[:10])
     # print("No encoded", target_label_encoded[:10])
     CV_train_data, CV_val_data = train_test_split(train_data, stratify=target_label_encoded, test_size=0.10, random_state=seed)
@@ -324,6 +325,10 @@ def objective(trial):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     transformer.to(device)
 
+    CV_train_tensor_X_cat = CV_train_tensor_X_cat.to(device)
+    CV_train_tensor_X_num = CV_train_tensor_X_num.to(device)
+    CV_train_tensor_Y = CV_train_tensor_Y.to(device)
+
     for epoch in range(NUM_EPOCHS):
         transformer.train()
         optimizer.zero_grad()
@@ -344,11 +349,15 @@ def objective(trial):
         # Evaluation
         transformer.eval()
         with torch.no_grad():
+            CV_val_tensor_X_cat = CV_val_tensor_X_cat.to(device)
+            CV_val_tensor_X_num = CV_val_tensor_X_num.to(device)
+            CV_val_tensor_Y = CV_val_tensor_Y.to(device)
+
             val_outputs = transformer(CV_val_tensor_X_cat, CV_val_tensor_X_num)
             val_loss = loss_fn(val_outputs, CV_val_tensor_Y)
 
             pred_probabilities = torch.softmax(val_outputs, dim=1)
-            ground_truth_classes = argmax(CV_val_tensor_Y, axis=1)
+            ground_truth_classes = torchargmax(CV_val_tensor_Y, axis=1)
 
             # for i in range(20):
             #     print(f"Real vs Predicted: {ground_truth_classes[i]}:{pred_probabilities[i]}")
@@ -396,7 +405,7 @@ train_data = train_data.sample(frac=1, random_state=seed).reset_index(drop=True)
 test_data = test_data.sample(frac=1, random_state=seed).reset_index(drop=True)
 
 target = train_data[LABEL].values
-target_label_encoded = argmax(target, axis=1)
+target_label_encoded = npargmax(target, axis=1)
 
 ### Get data
 CV_train_data, CV_val_data = train_test_split(train_data, stratify=target_label_encoded, test_size=0.10, random_state=seed)
@@ -485,6 +494,10 @@ metrics = AUROC(task="multiclass", num_classes=len(CV_train_tensor_Y.T))
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 transformer.to(device)
 
+CV_train_tensor_X_cat = CV_train_tensor_X_cat.to(device)
+CV_train_tensor_X_num = CV_train_tensor_X_num.to(device)
+CV_train_tensor_Y = CV_train_tensor_Y.to(device)
+
 for epoch in range(NUM_EPOCHS):
     transformer.train()
     optimizer.zero_grad()
@@ -505,11 +518,15 @@ for epoch in range(NUM_EPOCHS):
     # Evaluation
     transformer.eval()
     with torch.no_grad():
+        CV_val_tensor_X_cat = CV_val_tensor_X_cat.to(device)
+        CV_val_tensor_X_num = CV_val_tensor_X_num.to(device)
+        CV_val_tensor_Y = CV_val_tensor_Y.to(device)
+
         val_outputs = transformer(CV_val_tensor_X_cat, CV_val_tensor_X_num)
         val_loss = loss_fn(val_outputs, CV_val_tensor_Y)
 
         pred_probabilities = torch.softmax(val_outputs, dim=1)
-        ground_truth_classes = argmax(CV_val_tensor_Y, axis=1)
+        ground_truth_classes = torchargmax(CV_val_tensor_Y, axis=1)
         
         val_auc = metrics(pred_probabilities, ground_truth_classes)
     
@@ -521,15 +538,19 @@ gc.collect()
 
 transformer.eval()
 with torch.no_grad():
+    test_tensor_X_cat = test_tensor_X_cat.to(device)
+    test_tensor_X_num = test_tensor_X_num.to(device)
+    test_tensor_Y = test_tensor_Y.to(device)
+
     test_outputs = transformer(test_tensor_X_cat, test_tensor_X_num)
 
     test_pred_probabilities = torch.softmax(test_outputs, dim=1)
-    test_ground_truth_classes = argmax(test_tensor_Y, axis=1)
+    test_ground_truth_classes = torchargmax(test_tensor_Y, axis=1)
     
     val_auc = metrics(test_pred_probabilities, test_ground_truth_classes)
 
 
 print("Real vs Predicted:")
-for real, pred, probs in zip(test_ground_truth_classes, argmax(test_tensor_Y, axis=1), test_pred_probabilities):
+for real, pred, probs in zip(test_ground_truth_classes.cpu().numpy(), npargmax(test_tensor_Y.cpu().numpy(), axis=1), test_pred_probabilities.cpu().numpy()):
     print(f"{real.item()}:{pred.item()} - {probs}")
 print("Test AUC: ", val_auc.item())
